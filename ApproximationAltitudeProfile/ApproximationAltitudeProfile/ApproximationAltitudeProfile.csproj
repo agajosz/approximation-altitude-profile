@@ -1,0 +1,24 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>netcoreapp3.0</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="CsvHelper" Version="12.2.3" />
+    <PackageReference Include="EPPlus" Version="4.5.3.2" />
+    <PackageReference Include="ExcelDataReader" Version="3.6.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\GaussLinearElmination\GaussLinearElmination\GaussLinearElimination.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="alglibnet2">
+      <HintPath>..\..\..\..\..\..\..\Downloads\csharp\net-core\alglibnet2.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+
+</Project>
