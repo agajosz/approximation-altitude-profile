@@ -239,7 +239,7 @@ namespace GaussLinearElimination
                 }
             }
 
-            alglib.sparsesolvesks(matrix, dimensions, true, vectorB as double[], out var rep, out var x); //PYTAJCIE KASPRA O ALGLIB
+            alglib.sparsesolvesks(matrix, dimensions, true, vectorB as double[], out var rep, out var x);
 
             vectorXgauss = x as T[];
         }
