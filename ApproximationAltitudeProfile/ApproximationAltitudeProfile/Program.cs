@@ -16,8 +16,8 @@ namespace ApproximationAltitudeProfile
             TimeCheckBestAlgorithm_E2();
             TimeCheckIterativeAlg_E3();
             AltProfileComputation_C1(new List<int> { 2, 5, 14 });
-            PrecisionCheckIterativeAlgoritms(new List<int> { 50, 250, 500 });
-            PrecisionCheckIterativeAlgoritmsAndGauss(new List<int> { 50, 250, 500 });
+            PrecisionCheckIterativeAlgoritms(new List<int> { 1, 2, 5, 10, 15, 25, 50, 75, 100, 500, 1000, 2000 });
+            PrecisionCheckIterativeAlgoritmsAndGauss(new List<int> { 1, 2, 5, 10, 15, 25, 2000 });
             CheckAlgoritmTimes();
 
             Console.WriteLine("Finished calculations, generated results data.");
