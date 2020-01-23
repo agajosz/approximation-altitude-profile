@@ -1,6 +1,6 @@
 ﻿namespace ApproximationAltitudeProfile
 {
-    public enum AlgorithmType
+    public enum Algorithm
     {
         GaussPartialPivot,
         IterativeJacobi,

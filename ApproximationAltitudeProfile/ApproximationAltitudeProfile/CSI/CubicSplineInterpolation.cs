@@ -12,12 +12,12 @@ namespace ApproximationAltitudeProfile
 
         private List<double> _distancesBetweenXs;
 
-        private AlgorithmType _algorithmType;
+        private Algorithm _algorithmType;
         private readonly int _iteratives;
 
         public CubicSplineInterpolation(
             List<DataPoint> dataPoints,
-            AlgorithmType algorithType,
+            Algorithm algorithType,
             int iteratives = 3)
         {
             _points = new List<Point>();
@@ -111,23 +111,23 @@ namespace ApproximationAltitudeProfile
         {
             switch (_algorithmType)
             {
-                case AlgorithmType.GaussPartialPivot:
+                case Algorithm.GaussPartialPivot:
                     matrix.CalculateGP();
                     break;
-                case AlgorithmType.IterativeJacobi:
+                case Algorithm.IterativeJacobi:
                     for (int i = 0; i < _iteratives; i++)
                     {
                         matrix.CalculateJacobi();
                     }
 
                     break;
-                case AlgorithmType.IterativeGaussSeidel:
+                case Algorithm.IterativeGaussSeidel:
                     for (int i = 0; i < _iteratives; i++)
                     {
                         matrix.CalculateGaussSeidel();
                     }
                     break;
-                case AlgorithmType.SparseIterativeJacobi:
+                case Algorithm.SparseIterativeJacobi:
                     var sparseMatrix = new double[matrix.dimensions, 3];
                     for (var i = 0; i < matrix.dimensions; i++)
                     {
@@ -149,7 +149,7 @@ namespace ApproximationAltitudeProfile
                     }
 
                     break;
-                case AlgorithmType.SparseAlgLibraryType:
+                case Algorithm.SparseAlgLibraryType:
                     matrix.CalculateWithAlglib();
                     break;
                 default:

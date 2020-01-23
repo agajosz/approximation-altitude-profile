@@ -4,7 +4,7 @@ using ExcelDataReader;
 
 namespace ApproximationAltitudeProfile
 {
-    public static class DataParser
+    public static class Parser
     {
         public static List<DataPoint> ParsePointData(string fileName, int routeNumber)
         {

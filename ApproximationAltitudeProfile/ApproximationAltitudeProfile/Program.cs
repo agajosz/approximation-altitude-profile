@@ -1,18 +1,21 @@
-﻿using System;
+﻿// PERFORMED WITH: 
+// CPU: 2,3 GHz Intel Core i7
+// RAM: 16GB
+// GRAPHICS: Intel HD Graphics 4000 1536  MB
+// IDE: Visual Studio 2019 for Mac
+
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using ApproximationAltitudeProfile.AlgorithmModels;
 using CsvHelper;
 
 namespace ApproximationAltitudeProfile
 {
     class Program
     {
-        // Procesor i5-83500h
-        // 20 GB Ram
-        // GPU GTX 1050 4gb
-        // Visual Studio 2019 Professional
         private const string _csvFile = "Result_%points%_%route%.csv";
         static void Main(string[] args)
         {
@@ -27,129 +30,103 @@ namespace ApproximationAltitudeProfile
             Console.ReadLine();
         }
 
-        private static void ComputeForCheckPrecisionOffItterativeAlgoritm(List<int> iterativeList)
+        static void CheckTimeForBestAlghoritmE2()
         {
-            var resultList = new List<AlgorithmIterativePrecisionModel>();
-            foreach (var iterativeNumber in iterativeList)
+            var stopWatch = new Stopwatch();
+
+            var timeElapsedList = new List<AlgoritmCheckTimeModelWithIterations>();
+            var pointsFromRoute = Parser.ParsePointData(_csvFile.Replace("%points%", "500").Replace("%route%", "1"), 1);
+
+            for (int j = 0; j < 4; j++)
             {
-                var points = DataParser.ParsePointData(_csvFile.Replace("%points%", "250").Replace("%route%", "1"), 1);
-
-                var pointsToAlg = new List<DataPoint>();
-                for (int i = 0; i < points.Count; i++)
+                var pointsGivenToAlgo = new List<DataPoint>();
+                for (int i = 0; i < 25 + 25 * j; i++)
                 {
-                    if (i % 2 == 0)
-                    {
-                        pointsToAlg.Add(points[i]);
-                    }
-                }
-                var csiGaussSeidel = new CubicSplineInterpolation(pointsToAlg, AlgorithmType.IterativeGaussSeidel, iterativeNumber);
-                var csiGaussJacobi = new CubicSplineInterpolation(pointsToAlg, AlgorithmType.IterativeJacobi, iterativeNumber);
-
-                var indexes = new List<double>();
-                for (double i = 0; i < points.Count - 2; i++)
-                {
-                    indexes.Add(i);
+                    pointsGivenToAlgo.AddRange(pointsFromRoute);
                 }
 
-                var valuesFromFile = indexes.Select(x => new { x, value = points.First(p => p.X == x).Y, AlgorithmType = AlgorithmType.None }).ToList();
+                stopWatch.Start();
+                var csiSparseIterativeJacobi =
+                    new CubicSplineInterpolation(pointsGivenToAlgo, Algorithm.SparseIterativeJacobi, 3);
+                stopWatch.Stop();
 
-                var expectedValuesForSeidel = indexes.Select(x => new { x, value = csiGaussSeidel.GetObjectiveFunction(x), AlgorithmType = AlgorithmType.IterativeGaussSeidel }).ToList();
-
-                var expectedValuesForJacobi = indexes.Select(x => new { x, value = csiGaussJacobi.GetObjectiveFunction(x), AlgorithmType = AlgorithmType.IterativeJacobi }).ToList();
-
-
-                resultList.AddRange(expectedValuesForSeidel
-                    .Concat(valuesFromFile)
-                    .Concat(expectedValuesForJacobi)
-                    .GroupBy(x => x.x)
-                    .Select(gl => new AlgorithmIterativePrecisionModel
-                    {
-                        XKey = gl.Key,
-                        Iteration = iterativeNumber,
-                        ValueFromFile = gl.FirstOrDefault(v => v.AlgorithmType == AlgorithmType.None).value,
-                        ValueForGaussSeidel = gl.FirstOrDefault(v => v.AlgorithmType == AlgorithmType.IterativeGaussSeidel).value,
-                        ValueForJacobi = gl.FirstOrDefault(v => v.AlgorithmType == AlgorithmType.IterativeJacobi).value,
-                    })
-                    .Where(r => r.ValueFromFile - r.ValueForGaussSeidel != 0)
-                    .ToList());
+                timeElapsedList.Add(new AlgoritmCheckTimeModelWithIterations
+                {
+                    ElapsedTime = stopWatch.Elapsed,
+                    PointsQuantity = pointsGivenToAlgo.Count,
+                    AlgoritmType = Algorithm.SparseIterativeJacobi.ToString(),
+                });
+                stopWatch.Reset();
             }
 
-            foreach (var result in resultList)
-            {
-                result.IsSameValue = result.ValueForGaussSeidel == result.ValueForJacobi;
-            }
-
-            using (var writer = new StreamWriter($"result_check_preciscion_iterative_algo.csv"))
+            using (var writer = new StreamWriter($"times_best_algr.csv"))
             using (var csv = new CsvWriter(writer))
             {
-                csv.WriteRecords(resultList);
+                csv.WriteRecords(timeElapsedList);
             }
         }
 
-        private static void ComputeForCheckPrecisionOfIterativeAlgoritmWithGauss(List<int> iterativeList)
+        static void CheckTimeForIterativeAlghoritmE3()
         {
-            var resultList = new List<AlgorithmIterativePrecisionWithGaussModel>();
-            foreach (var iterativeNumber in iterativeList)
+            var timeElapsedList = new List<AlgoritmCheckTimeModelWithIterations>();
+            var pointsFromRoute = Parser.ParsePointData(_csvFile.Replace("%points%", "500").Replace("%route%", "1"), 1);
+
+            var pointsGivenToAlgo = new List<DataPoint>();
+            for (int i = 0; i < 21; i++)
             {
-                var points = DataParser.ParsePointData(_csvFile.Replace("%points%", "250").Replace("%route%", "1"), 1);
-
-                var pointsToAlg = new List<DataPoint>();
-                for (int i = 0; i < points.Count; i++)
-                {
-                    if (i % 2 == 0)
-                    {
-                        pointsToAlg.Add(points[i]);
-                    }
-                }
-                var csiGaussSeidel = new CubicSplineInterpolation(pointsToAlg, AlgorithmType.IterativeGaussSeidel, iterativeNumber);
-                var csiGaussJacobi = new CubicSplineInterpolation(pointsToAlg, AlgorithmType.IterativeJacobi, iterativeNumber);
-                var csiGaussPartialPivot = new CubicSplineInterpolation(pointsToAlg, AlgorithmType.GaussPartialPivot, iterativeNumber);
-
-                var indexes = new List<double>();
-                for (double i = 0; i < points.Count - 2; i++)
-                {
-                    indexes.Add(i);
-                }
-
-                var valuesFromFile = indexes.Select(x => new { x, value = points.First(p => p.X == x).Y, AlgorithmType = AlgorithmType.None }).ToList();
-
-                var expectedValuesForSeidel = indexes.Select(x => new { x, value = csiGaussSeidel.GetObjectiveFunction(x), AlgorithmType = AlgorithmType.IterativeGaussSeidel }).ToList();
-
-                var expectedValuesForJacobi = indexes.Select(x => new { x, value = csiGaussJacobi.GetObjectiveFunction(x), AlgorithmType = AlgorithmType.IterativeJacobi }).ToList();
-
-                var expectedValuesForPartialPivot = indexes.Select(x => new { x, value = csiGaussPartialPivot.GetObjectiveFunction(x), AlgorithmType = AlgorithmType.GaussPartialPivot }).ToList();
-
-
-                resultList.AddRange(expectedValuesForSeidel
-                    .Concat(valuesFromFile)
-                    .Concat(expectedValuesForJacobi)
-                    .Concat(expectedValuesForPartialPivot)
-                    .GroupBy(x => x.x)
-                    .Select(gl => new AlgorithmIterativePrecisionWithGaussModel
-                    {
-                        XKey = gl.Key,
-                        Iteration = iterativeNumber,
-                        ValueFromFile = gl.FirstOrDefault(v => v.AlgorithmType == AlgorithmType.None).value,
-                        ValueForGaussSeidel = gl.FirstOrDefault(v => v.AlgorithmType == AlgorithmType.IterativeGaussSeidel).value,
-                        ValueForGauss = gl.FirstOrDefault(v => v.AlgorithmType == AlgorithmType.GaussPartialPivot).value,
-                    })
-                    .Where(r => r.ValueFromFile - r.ValueForGaussSeidel != 0)
-                    .ToList());
+                pointsGivenToAlgo.AddRange(pointsFromRoute);
             }
 
-            foreach (var result in resultList)
-            {
-                result.IsBetterThanGauss = Math.Abs((result.ValueForGauss - result.ValueFromFile) / result.ValueFromFile) >
-                                           Math.Abs((result.ValueForGaussSeidel - result.ValueFromFile) / result.ValueFromFile);
 
-                result.IsSameAsGauss = (result.ValueForGauss == result.ValueForGaussSeidel);
+            for (int i = 3; i < 40; i += 3)
+            {
+                var stopWatch = new Stopwatch();
+                stopWatch.Start();
+                var csiGaussSeidel =
+                    new CubicSplineInterpolation(pointsGivenToAlgo, Algorithm.IterativeGaussSeidel, i);
+                stopWatch.Stop();
+                timeElapsedList.Add(new AlgoritmCheckTimeModelWithIterations
+                {
+                    ElapsedTime = stopWatch.Elapsed,
+                    PointsQuantity = pointsGivenToAlgo.Count,
+                    AlgoritmType = Algorithm.IterativeGaussSeidel.ToString(),
+                    Iteration = i
+                });
+
+                stopWatch.Reset();
+                stopWatch.Start();
+                var csiGaussJacobi = new CubicSplineInterpolation(pointsGivenToAlgo, Algorithm.IterativeJacobi, i);
+                stopWatch.Stop();
+
+                timeElapsedList.Add(new AlgoritmCheckTimeModelWithIterations
+                {
+                    ElapsedTime = stopWatch.Elapsed,
+                    PointsQuantity = pointsGivenToAlgo.Count,
+                    AlgoritmType = Algorithm.IterativeJacobi.ToString(),
+                    Iteration = i
+                });
+
+                stopWatch.Reset();
+                stopWatch.Start();
+                var csiSparseIterativeJacobi =
+                    new CubicSplineInterpolation(pointsGivenToAlgo, Algorithm.SparseIterativeJacobi, i);
+                stopWatch.Stop();
+
+                timeElapsedList.Add(new AlgoritmCheckTimeModelWithIterations
+                {
+                    ElapsedTime = stopWatch.Elapsed,
+                    PointsQuantity = pointsGivenToAlgo.Count,
+                    AlgoritmType = Algorithm.SparseIterativeJacobi.ToString(),
+                    Iteration = i
+                });
             }
 
-            using (var writer = new StreamWriter($"result_check_preciscion_iterative_algo_with_gauss.csv"))
+            using (var writer = new StreamWriter($"times_iterative_algr.csv"))
             using (var csv = new CsvWriter(writer))
             {
-                csv.WriteRecords(resultList);
+                csv.WriteRecords(timeElapsedList);
             }
+
         }
 
         static void ComputeAltitudeProfileC1(List<int> routeNumbers)
@@ -159,7 +136,7 @@ namespace ApproximationAltitudeProfile
             {
                 foreach (var pointsQuantity in pointsToAlgo)
                 {
-                    var pointsFromRoute = DataParser.ParsePointData(_csvFile.Replace("%points%", pointsQuantity.ToString()).Replace("%route%", routeNumber.ToString()), routeNumber);
+                    var pointsFromRoute = Parser.ParsePointData(_csvFile.Replace("%points%", pointsQuantity.ToString()).Replace("%route%", routeNumber.ToString()), routeNumber);
 
                     var pointsGivenToAlgo = new List<DataPoint>();
                     for (int i = 0; i < pointsFromRoute.Count; i++)
@@ -170,11 +147,11 @@ namespace ApproximationAltitudeProfile
                         }
                     }
 
-                    var csiGaussSeidel = new CubicSplineInterpolation(pointsGivenToAlgo, AlgorithmType.IterativeGaussSeidel);
-                    var csiGaussJacobi = new CubicSplineInterpolation(pointsGivenToAlgo, AlgorithmType.IterativeJacobi);
-                    var csiGaussPartialPivot = new CubicSplineInterpolation(pointsGivenToAlgo, AlgorithmType.GaussPartialPivot);
-                    var csiSparseIterativeJacobi = new CubicSplineInterpolation(pointsGivenToAlgo, AlgorithmType.SparseIterativeJacobi);
-                    var alglib = new CubicSplineInterpolation(pointsGivenToAlgo, AlgorithmType.SparseAlgLibraryType);
+                    var csiGaussSeidel = new CubicSplineInterpolation(pointsGivenToAlgo, Algorithm.IterativeGaussSeidel);
+                    var csiGaussJacobi = new CubicSplineInterpolation(pointsGivenToAlgo, Algorithm.IterativeJacobi);
+                    var csiGaussPartialPivot = new CubicSplineInterpolation(pointsGivenToAlgo, Algorithm.GaussPartialPivot);
+                    var csiSparseIterativeJacobi = new CubicSplineInterpolation(pointsGivenToAlgo, Algorithm.SparseIterativeJacobi);
+                    var alglib = new CubicSplineInterpolation(pointsGivenToAlgo, Algorithm.SparseAlgLibraryType);
 
                     var indexes = new List<double>();
                     for (double i = 0; i < pointsFromRoute.Count - 2; i++)
@@ -182,17 +159,17 @@ namespace ApproximationAltitudeProfile
                         indexes.Add(i);
                     }
 
-                    var valuesFromFile = indexes.Select(x => new { x, value = pointsFromRoute.First(p => p.X == x).Y, AlgorithmType = AlgorithmType.None }).ToList();
+                    var valuesFromFile = indexes.Select(x => new { x, value = pointsFromRoute.First(p => p.X == x).Y, AlgorithmType = Algorithm.None }).ToList();
 
-                    var expectedValuesForAlglib = indexes.Select(x => new { x, value = alglib.GetObjectiveFunction(x), AlgorithmType = AlgorithmType.SparseAlgLibraryType }).ToList();
+                    var expectedValuesForAlglib = indexes.Select(x => new { x, value = alglib.GetObjectiveFunction(x), AlgorithmType = Algorithm.SparseAlgLibraryType }).ToList();
 
-                    var expectedValuesForSeidel = indexes.Select(x => new { x, value = csiGaussSeidel.GetObjectiveFunction(x), AlgorithmType = AlgorithmType.IterativeGaussSeidel }).ToList();
+                    var expectedValuesForSeidel = indexes.Select(x => new { x, value = csiGaussSeidel.GetObjectiveFunction(x), AlgorithmType = Algorithm.IterativeGaussSeidel }).ToList();
 
-                    var expectedValuesForJacobi = indexes.Select(x => new { x, value = csiGaussJacobi.GetObjectiveFunction(x), AlgorithmType = AlgorithmType.IterativeJacobi }).ToList();
+                    var expectedValuesForJacobi = indexes.Select(x => new { x, value = csiGaussJacobi.GetObjectiveFunction(x), AlgorithmType = Algorithm.IterativeJacobi }).ToList();
 
-                    var expectedValuesForPartialPivot = indexes.Select(x => new { x, value = csiGaussPartialPivot.GetObjectiveFunction(x), AlgorithmType = AlgorithmType.GaussPartialPivot }).ToList();
+                    var expectedValuesForPartialPivot = indexes.Select(x => new { x, value = csiGaussPartialPivot.GetObjectiveFunction(x), AlgorithmType = Algorithm.GaussPartialPivot }).ToList();
 
-                    var expectedValuesForSparseGaussSeidel = indexes.Select(x => new { x, value = csiSparseIterativeJacobi.GetObjectiveFunction(x), AlgorithmType = AlgorithmType.SparseIterativeJacobi }).ToList();
+                    var expectedValuesForSparseGaussSeidel = indexes.Select(x => new { x, value = csiSparseIterativeJacobi.GetObjectiveFunction(x), AlgorithmType = Algorithm.SparseIterativeJacobi }).ToList();
 
                     var groupedList = expectedValuesForSeidel
                         .Concat(expectedValuesForAlglib)
@@ -204,12 +181,12 @@ namespace ApproximationAltitudeProfile
                         .Select(gl => new
                         {
                             gl.Key,
-                            ValueFromFile = gl.FirstOrDefault(v => v.AlgorithmType == AlgorithmType.None).value,
-                            Alglib = gl.FirstOrDefault(v => v.AlgorithmType == AlgorithmType.SparseAlgLibraryType).value,
-                            PartialPivot = gl.FirstOrDefault(v => v.AlgorithmType == AlgorithmType.GaussPartialPivot).value,
-                            GaussSeider = gl.FirstOrDefault(v => v.AlgorithmType == AlgorithmType.IterativeGaussSeidel).value,
-                            Jacobi = gl.FirstOrDefault(v => v.AlgorithmType == AlgorithmType.IterativeJacobi).value,
-                            SparseJacobie = gl.FirstOrDefault(v => v.AlgorithmType == AlgorithmType.SparseIterativeJacobi).value
+                            ValueFromFile = gl.FirstOrDefault(v => v.AlgorithmType == Algorithm.None).value,
+                            Alglib = gl.FirstOrDefault(v => v.AlgorithmType == Algorithm.SparseAlgLibraryType).value,
+                            PartialPivot = gl.FirstOrDefault(v => v.AlgorithmType == Algorithm.GaussPartialPivot).value,
+                            GaussSeider = gl.FirstOrDefault(v => v.AlgorithmType == Algorithm.IterativeGaussSeidel).value,
+                            Jacobi = gl.FirstOrDefault(v => v.AlgorithmType == Algorithm.IterativeJacobi).value,
+                            SparseJacobie = gl.FirstOrDefault(v => v.AlgorithmType == Algorithm.SparseIterativeJacobi).value
                         })
                         .Where(r => r.ValueFromFile - r.GaussSeider != 0)
                         .ToList();
@@ -245,10 +222,135 @@ namespace ApproximationAltitudeProfile
             }
         }
 
+        private static void ComputeForCheckPrecisionOffItterativeAlgoritm(List<int> iterativeList)
+        {
+            var resultList = new List<AlgorithmIterativePrecisionModel>();
+            foreach (var iterativeNumber in iterativeList)
+            {
+                var points = Parser.ParsePointData(_csvFile.Replace("%points%", "250").Replace("%route%", "1"), 1);
+
+                var pointsToAlg = new List<DataPoint>();
+                for (int i = 0; i < points.Count; i++)
+                {
+                    if (i % 2 == 0)
+                    {
+                        pointsToAlg.Add(points[i]);
+                    }
+                }
+                var csiGaussSeidel = new CubicSplineInterpolation(pointsToAlg, Algorithm.IterativeGaussSeidel, iterativeNumber);
+                var csiGaussJacobi = new CubicSplineInterpolation(pointsToAlg, Algorithm.IterativeJacobi, iterativeNumber);
+
+                var indexes = new List<double>();
+                for (double i = 0; i < points.Count - 2; i++)
+                {
+                    indexes.Add(i);
+                }
+
+                var valuesFromFile = indexes.Select(x => new { x, value = points.First(p => p.X == x).Y, AlgorithmType = Algorithm.None }).ToList();
+
+                var expectedValuesForSeidel = indexes.Select(x => new { x, value = csiGaussSeidel.GetObjectiveFunction(x), AlgorithmType = Algorithm.IterativeGaussSeidel }).ToList();
+
+                var expectedValuesForJacobi = indexes.Select(x => new { x, value = csiGaussJacobi.GetObjectiveFunction(x), AlgorithmType = Algorithm.IterativeJacobi }).ToList();
+
+
+                resultList.AddRange(expectedValuesForSeidel
+                    .Concat(valuesFromFile)
+                    .Concat(expectedValuesForJacobi)
+                    .GroupBy(x => x.x)
+                    .Select(gl => new AlgorithmIterativePrecisionModel
+                    {
+                        XKey = gl.Key,
+                        Iteration = iterativeNumber,
+                        ValueFromFile = gl.FirstOrDefault(v => v.AlgorithmType == Algorithm.None).value,
+                        ValueForGaussSeidel = gl.FirstOrDefault(v => v.AlgorithmType == Algorithm.IterativeGaussSeidel).value,
+                        ValueForJacobi = gl.FirstOrDefault(v => v.AlgorithmType == Algorithm.IterativeJacobi).value,
+                    })
+                    .Where(r => r.ValueFromFile - r.ValueForGaussSeidel != 0)
+                    .ToList());
+            }
+
+            foreach (var result in resultList)
+            {
+                result.IsSameValue = result.ValueForGaussSeidel == result.ValueForJacobi;
+            }
+
+            using (var writer = new StreamWriter($"result_check_preciscion_iterative_algo.csv"))
+            using (var csv = new CsvWriter(writer))
+            {
+                csv.WriteRecords(resultList);
+            }
+        }
+
+        private static void ComputeForCheckPrecisionOfIterativeAlgoritmWithGauss(List<int> iterativeList)
+        {
+            var resultList = new List<AlgorithmIterativePrecisionWithGaussModel>();
+            foreach (var iterativeNumber in iterativeList)
+            {
+                var points = Parser.ParsePointData(_csvFile.Replace("%points%", "250").Replace("%route%", "1"), 1);
+
+                var pointsToAlg = new List<DataPoint>();
+                for (int i = 0; i < points.Count; i++)
+                {
+                    if (i % 2 == 0)
+                    {
+                        pointsToAlg.Add(points[i]);
+                    }
+                }
+                var csiGaussSeidel = new CubicSplineInterpolation(pointsToAlg, Algorithm.IterativeGaussSeidel, iterativeNumber);
+                var csiGaussJacobi = new CubicSplineInterpolation(pointsToAlg, Algorithm.IterativeJacobi, iterativeNumber);
+                var csiGaussPartialPivot = new CubicSplineInterpolation(pointsToAlg, Algorithm.GaussPartialPivot, iterativeNumber);
+
+                var indexes = new List<double>();
+                for (double i = 0; i < points.Count - 2; i++)
+                {
+                    indexes.Add(i);
+                }
+
+                var valuesFromFile = indexes.Select(x => new { x, value = points.First(p => p.X == x).Y, AlgorithmType = Algorithm.None }).ToList();
+
+                var expectedValuesForSeidel = indexes.Select(x => new { x, value = csiGaussSeidel.GetObjectiveFunction(x), AlgorithmType = Algorithm.IterativeGaussSeidel }).ToList();
+
+                var expectedValuesForJacobi = indexes.Select(x => new { x, value = csiGaussJacobi.GetObjectiveFunction(x), AlgorithmType = Algorithm.IterativeJacobi }).ToList();
+
+                var expectedValuesForPartialPivot = indexes.Select(x => new { x, value = csiGaussPartialPivot.GetObjectiveFunction(x), AlgorithmType = Algorithm.GaussPartialPivot }).ToList();
+
+
+                resultList.AddRange(expectedValuesForSeidel
+                    .Concat(valuesFromFile)
+                    .Concat(expectedValuesForJacobi)
+                    .Concat(expectedValuesForPartialPivot)
+                    .GroupBy(x => x.x)
+                    .Select(gl => new AlgorithmIterativePrecisionWithGaussModel
+                    {
+                        XKey = gl.Key,
+                        Iteration = iterativeNumber,
+                        ValueFromFile = gl.FirstOrDefault(v => v.AlgorithmType == Algorithm.None).value,
+                        ValueForGaussSeidel = gl.FirstOrDefault(v => v.AlgorithmType == Algorithm.IterativeGaussSeidel).value,
+                        ValueForGauss = gl.FirstOrDefault(v => v.AlgorithmType == Algorithm.GaussPartialPivot).value,
+                    })
+                    .Where(r => r.ValueFromFile - r.ValueForGaussSeidel != 0)
+                    .ToList());
+            }
+
+            foreach (var result in resultList)
+            {
+                result.IsBetterThanGauss = Math.Abs((result.ValueForGauss - result.ValueFromFile) / result.ValueFromFile) >
+                                           Math.Abs((result.ValueForGaussSeidel - result.ValueFromFile) / result.ValueFromFile);
+
+                result.IsSameAsGauss = (result.ValueForGauss == result.ValueForGaussSeidel);
+            }
+
+            using (var writer = new StreamWriter($"result_check_preciscion_iterative_algo_with_gauss.csv"))
+            using (var csv = new CsvWriter(writer))
+            {
+                csv.WriteRecords(resultList);
+            }
+        }
+              
         static void CheckAlgoritmTimes()
         {
             var timeElapsedList = new List<AlgoritmCheckTimeModel>();
-            var pointsFromRoute = DataParser.ParsePointData(_csvFile.Replace("%points%", "250").Replace("%route%", "1"), 1);
+            var pointsFromRoute = Parser.ParsePointData(_csvFile.Replace("%points%", "250").Replace("%route%", "1"), 1);
             for (int j = 0; j < 5; j++)
             {
                 var pointsGivenToAlgo = new List<DataPoint>();
@@ -260,62 +362,62 @@ namespace ApproximationAltitudeProfile
                 var stopWatch = new Stopwatch();
                 stopWatch.Start();
                 var csiGaussSeidel =
-                    new CubicSplineInterpolation(pointsGivenToAlgo, AlgorithmType.IterativeGaussSeidel);
+                    new CubicSplineInterpolation(pointsGivenToAlgo, Algorithm.IterativeGaussSeidel);
                 stopWatch.Stop();
                 timeElapsedList.Add(new AlgoritmCheckTimeModel
                 {
                     ElapsedTime = stopWatch.Elapsed,
                     PointsQuantity = pointsGivenToAlgo.Count,
-                    AlgoritmType = AlgorithmType.IterativeGaussSeidel.ToString(),
+                    AlgoritmType = Algorithm.IterativeGaussSeidel.ToString(),
                 });
 
                 stopWatch.Reset();
                 stopWatch.Start();
-                var csiGaussJacobi = new CubicSplineInterpolation(pointsGivenToAlgo, AlgorithmType.IterativeJacobi);
+                var csiGaussJacobi = new CubicSplineInterpolation(pointsGivenToAlgo, Algorithm.IterativeJacobi);
                 stopWatch.Stop();
 
                 timeElapsedList.Add(new AlgoritmCheckTimeModel
                 {
                     ElapsedTime = stopWatch.Elapsed,
                     PointsQuantity = pointsGivenToAlgo.Count,
-                    AlgoritmType = AlgorithmType.IterativeJacobi.ToString(),
+                    AlgoritmType = Algorithm.IterativeJacobi.ToString(),
                 });
 
                 stopWatch.Reset();
                 stopWatch.Start();
                 var csiGaussPartialPivot =
-                    new CubicSplineInterpolation(pointsGivenToAlgo, AlgorithmType.GaussPartialPivot);
+                    new CubicSplineInterpolation(pointsGivenToAlgo, Algorithm.GaussPartialPivot);
                 stopWatch.Stop();
 
                 timeElapsedList.Add(new AlgoritmCheckTimeModel
                 {
                     ElapsedTime = stopWatch.Elapsed,
-                    AlgoritmType = AlgorithmType.GaussPartialPivot.ToString(),
+                    AlgoritmType = Algorithm.GaussPartialPivot.ToString(),
                     PointsQuantity = pointsGivenToAlgo.Count
                 });
 
                 stopWatch.Reset();
                 stopWatch.Start();
-                var csiSparseIterativeJacobi = new CubicSplineInterpolation(pointsGivenToAlgo, AlgorithmType.SparseIterativeJacobi);
+                var csiSparseIterativeJacobi = new CubicSplineInterpolation(pointsGivenToAlgo, Algorithm.SparseIterativeJacobi);
                 stopWatch.Stop();
 
                 timeElapsedList.Add(new AlgoritmCheckTimeModel
                 {
                     ElapsedTime = stopWatch.Elapsed,
-                    AlgoritmType = AlgorithmType.SparseIterativeJacobi.ToString(),
+                    AlgoritmType = Algorithm.SparseIterativeJacobi.ToString(),
                     PointsQuantity = pointsGivenToAlgo.Count
                 });
 
                 stopWatch.Reset();
                 stopWatch.Start();
-                var alglib = new CubicSplineInterpolation(pointsGivenToAlgo, AlgorithmType.SparseAlgLibraryType);
+                var alglib = new CubicSplineInterpolation(pointsGivenToAlgo, Algorithm.SparseAlgLibraryType);
                 stopWatch.Stop();
                 stopWatch.Stop();
 
                 timeElapsedList.Add(new AlgoritmCheckTimeModel
                 {
                     ElapsedTime = stopWatch.Elapsed,
-                    AlgoritmType = AlgorithmType.SparseAlgLibraryType.ToString(),
+                    AlgoritmType = Algorithm.SparseAlgLibraryType.ToString(),
                     PointsQuantity = pointsGivenToAlgo.Count
                 });
             }
@@ -325,104 +427,6 @@ namespace ApproximationAltitudeProfile
             {
                 csv.WriteRecords(timeElapsedList);
             }
-        }
-
-        static void CheckTimeForBestAlghoritmE2()
-        {
-            var stopWatch = new Stopwatch();
-
-            var timeElapsedList = new List<AlgoritmCheckTimeModelWithIterations>();
-            var pointsFromRoute = DataParser.ParsePointData(_csvFile.Replace("%points%", "500").Replace("%route%", "1"), 1);
-
-            for (int j = 0; j < 4; j++)
-            {
-                var pointsGivenToAlgo = new List<DataPoint>();
-                for (int i = 0; i < 25 + 25 * j; i++)
-                {
-                    pointsGivenToAlgo.AddRange(pointsFromRoute);
-                }
-
-                stopWatch.Start();
-                var csiSparseIterativeJacobi =
-                    new CubicSplineInterpolation(pointsGivenToAlgo, AlgorithmType.SparseIterativeJacobi, 3);
-                stopWatch.Stop();
-
-                timeElapsedList.Add(new AlgoritmCheckTimeModelWithIterations
-                {
-                    ElapsedTime = stopWatch.Elapsed,
-                    PointsQuantity = pointsGivenToAlgo.Count,
-                    AlgoritmType = AlgorithmType.SparseIterativeJacobi.ToString(),
-                });
-                stopWatch.Reset();
-            }
-
-            using (var writer = new StreamWriter($"times_best_algr.csv"))
-            using (var csv = new CsvWriter(writer))
-            {
-                csv.WriteRecords(timeElapsedList);
-            }
-        }
-        static void CheckTimeForIterativeAlghoritmE3()
-        {
-            var timeElapsedList = new List<AlgoritmCheckTimeModelWithIterations>();
-            var pointsFromRoute = DataParser.ParsePointData(_csvFile.Replace("%points%", "500").Replace("%route%", "1"), 1);
-
-            var pointsGivenToAlgo = new List<DataPoint>();
-            for (int i = 0; i < 21; i++)
-            {
-                pointsGivenToAlgo.AddRange(pointsFromRoute);
-            }
-
-
-            for (int i = 3; i < 40; i += 3)
-            {
-                var stopWatch = new Stopwatch();
-                stopWatch.Start();
-                var csiGaussSeidel =
-                    new CubicSplineInterpolation(pointsGivenToAlgo, AlgorithmType.IterativeGaussSeidel, i);
-                stopWatch.Stop();
-                timeElapsedList.Add(new AlgoritmCheckTimeModelWithIterations
-                {
-                    ElapsedTime = stopWatch.Elapsed,
-                    PointsQuantity = pointsGivenToAlgo.Count,
-                    AlgoritmType = AlgorithmType.IterativeGaussSeidel.ToString(),
-                    Iteration = i
-                });
-
-                stopWatch.Reset();
-                stopWatch.Start();
-                var csiGaussJacobi = new CubicSplineInterpolation(pointsGivenToAlgo, AlgorithmType.IterativeJacobi, i);
-                stopWatch.Stop();
-
-                timeElapsedList.Add(new AlgoritmCheckTimeModelWithIterations
-                {
-                    ElapsedTime = stopWatch.Elapsed,
-                    PointsQuantity = pointsGivenToAlgo.Count,
-                    AlgoritmType = AlgorithmType.IterativeJacobi.ToString(),
-                    Iteration = i
-                });
-
-                stopWatch.Reset();
-                stopWatch.Start();
-                var csiSparseIterativeJacobi =
-                    new CubicSplineInterpolation(pointsGivenToAlgo, AlgorithmType.SparseIterativeJacobi, i);
-                stopWatch.Stop();
-
-                timeElapsedList.Add(new AlgoritmCheckTimeModelWithIterations
-                {
-                    ElapsedTime = stopWatch.Elapsed,
-                    PointsQuantity = pointsGivenToAlgo.Count,
-                    AlgoritmType = AlgorithmType.SparseIterativeJacobi.ToString(),
-                    Iteration = i
-                });
-            }
-
-            using (var writer = new StreamWriter($"times_iterative_algr.csv"))
-            using (var csv = new CsvWriter(writer))
-            {
-                csv.WriteRecords(timeElapsedList);
-            }
-
         }
     }
 }
