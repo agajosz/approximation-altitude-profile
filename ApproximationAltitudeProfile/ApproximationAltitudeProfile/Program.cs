@@ -16,8 +16,8 @@ namespace ApproximationAltitudeProfile
             CheckTimeForBestAlghoritmE2();
             CheckTimeForIterativeAlghoritmE3();
             ComputeAltitudeProfileC1(new List<int> { 2, 5, 14 });
-            ComputeForCheckPrecisionOffItterativeAlgoritm(new List<int> { 1, 2, 5, 10, 15, 25, 50, 75, 100, 500, 1000, 2000 });
-            ComputeForCheckPrecisionOfIterativeAlgoritmWithGauss(new List<int> { 1, 2, 5, 10, 15, 25, 2000 });
+            ComputeForCheckPrecisionOfItterativeAlgoritm(new List<int> { 50, 250, 500 });
+            ComputeForCheckPrecisionOfIterativeAlgoritmWithGauss(new List<int> { 50, 250, 500 });
             CheckAlgoritmTimes();
 
             Console.WriteLine("End");
@@ -29,7 +29,7 @@ namespace ApproximationAltitudeProfile
             var stopWatch = new Stopwatch();
 
             var timeElapsedList = new List<AlgoritmCheckTimeWithIterations>();
-            var pointsFromRoute = Parser.ParsePointData(_csvFile.Replace("%points%", "500").Replace("%route%", "1"), 1);
+            var pointsFromRoute = Parser.ParsePointData(_csvFile.Replace("%points%", "500").Replace("%route%", "2"), 2);
 
             for (int j = 0; j < 4; j++)
             {
@@ -63,7 +63,7 @@ namespace ApproximationAltitudeProfile
         static void CheckTimeForIterativeAlghoritmE3()
         {
             var timeElapsedList = new List<AlgoritmCheckTimeWithIterations>();
-            var pointsFromRoute = Parser.ParsePointData(_csvFile.Replace("%points%", "500").Replace("%route%", "1"), 1);
+            var pointsFromRoute = Parser.ParsePointData(_csvFile.Replace("%points%", "500").Replace("%route%", "2"), 2);
 
             var pointsGivenToAlgo = new List<DataPoint>();
             for (int i = 0; i < 21; i++)
@@ -216,12 +216,12 @@ namespace ApproximationAltitudeProfile
             }
         }
 
-        private static void ComputeForCheckPrecisionOffItterativeAlgoritm(List<int> iterativeList)
+        private static void ComputeForCheckPrecisionOfItterativeAlgoritm(List<int> iterativeList)
         {
             var resultList = new List<AlgorithmIterativePrecision>();
             foreach (var iterativeNumber in iterativeList)
             {
-                var points = Parser.ParsePointData(_csvFile.Replace("%points%", "250").Replace("%route%", "1"), 1);
+                var points = Parser.ParsePointData(_csvFile.Replace("%points%", "250").Replace("%route%", "2"), 2);
 
                 var pointsToAlg = new List<DataPoint>();
                 for (int i = 0; i < points.Count; i++)
@@ -280,7 +280,7 @@ namespace ApproximationAltitudeProfile
             var resultList = new List<AlgorithmIterativePrecisionWithGauss>();
             foreach (var iterativeNumber in iterativeList)
             {
-                var points = Parser.ParsePointData(_csvFile.Replace("%points%", "250").Replace("%route%", "1"), 1);
+                var points = Parser.ParsePointData(_csvFile.Replace("%points%", "250").Replace("%route%", "2"), 2);
 
                 var pointsToAlg = new List<DataPoint>();
                 for (int i = 0; i < points.Count; i++)
@@ -344,7 +344,7 @@ namespace ApproximationAltitudeProfile
         static void CheckAlgoritmTimes()
         {
             var timeElapsedList = new List<AlgoritmCheckTime>();
-            var pointsFromRoute = Parser.ParsePointData(_csvFile.Replace("%points%", "250").Replace("%route%", "1"), 1);
+            var pointsFromRoute = Parser.ParsePointData(_csvFile.Replace("%points%", "250").Replace("%route%", "2"), 2);
             for (int j = 0; j < 5; j++)
             {
                 var pointsGivenToAlgo = new List<DataPoint>();
