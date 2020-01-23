@@ -1,10 +1,4 @@
-﻿// PERFORMED WITH: 
-// CPU: 2,3 GHz Intel Core i7
-// RAM: 16GB
-// GRAPHICS: Intel HD Graphics 4000 1536  MB
-// IDE: Visual Studio 2019 for Mac
-
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
@@ -21,7 +15,7 @@ namespace ApproximationAltitudeProfile
         {
             CheckTimeForBestAlghoritmE2();
             CheckTimeForIterativeAlghoritmE3();
-            ComputeAltitudeProfileC1(new List<int> { 1, 13, 18 });
+            ComputeAltitudeProfileC1(new List<int> { 2, 5, 14 });
             ComputeForCheckPrecisionOffItterativeAlgoritm(new List<int> { 1, 2, 5, 10, 15, 25, 50, 75, 100, 500, 1000, 2000 });
             ComputeForCheckPrecisionOfIterativeAlgoritmWithGauss(new List<int> { 1, 2, 5, 10, 15, 25, 2000 });
             CheckAlgoritmTimes();
@@ -34,7 +28,7 @@ namespace ApproximationAltitudeProfile
         {
             var stopWatch = new Stopwatch();
 
-            var timeElapsedList = new List<AlgoritmCheckTimeModelWithIterations>();
+            var timeElapsedList = new List<AlgoritmCheckTimeWithIterations>();
             var pointsFromRoute = Parser.ParsePointData(_csvFile.Replace("%points%", "500").Replace("%route%", "1"), 1);
 
             for (int j = 0; j < 4; j++)
@@ -50,7 +44,7 @@ namespace ApproximationAltitudeProfile
                     new CubicSplineInterpolation(pointsGivenToAlgo, Algorithm.SparseIterativeJacobi, 3);
                 stopWatch.Stop();
 
-                timeElapsedList.Add(new AlgoritmCheckTimeModelWithIterations
+                timeElapsedList.Add(new AlgoritmCheckTimeWithIterations
                 {
                     ElapsedTime = stopWatch.Elapsed,
                     PointsQuantity = pointsGivenToAlgo.Count,
@@ -68,7 +62,7 @@ namespace ApproximationAltitudeProfile
 
         static void CheckTimeForIterativeAlghoritmE3()
         {
-            var timeElapsedList = new List<AlgoritmCheckTimeModelWithIterations>();
+            var timeElapsedList = new List<AlgoritmCheckTimeWithIterations>();
             var pointsFromRoute = Parser.ParsePointData(_csvFile.Replace("%points%", "500").Replace("%route%", "1"), 1);
 
             var pointsGivenToAlgo = new List<DataPoint>();
@@ -85,7 +79,7 @@ namespace ApproximationAltitudeProfile
                 var csiGaussSeidel =
                     new CubicSplineInterpolation(pointsGivenToAlgo, Algorithm.IterativeGaussSeidel, i);
                 stopWatch.Stop();
-                timeElapsedList.Add(new AlgoritmCheckTimeModelWithIterations
+                timeElapsedList.Add(new AlgoritmCheckTimeWithIterations
                 {
                     ElapsedTime = stopWatch.Elapsed,
                     PointsQuantity = pointsGivenToAlgo.Count,
@@ -98,7 +92,7 @@ namespace ApproximationAltitudeProfile
                 var csiGaussJacobi = new CubicSplineInterpolation(pointsGivenToAlgo, Algorithm.IterativeJacobi, i);
                 stopWatch.Stop();
 
-                timeElapsedList.Add(new AlgoritmCheckTimeModelWithIterations
+                timeElapsedList.Add(new AlgoritmCheckTimeWithIterations
                 {
                     ElapsedTime = stopWatch.Elapsed,
                     PointsQuantity = pointsGivenToAlgo.Count,
@@ -112,7 +106,7 @@ namespace ApproximationAltitudeProfile
                     new CubicSplineInterpolation(pointsGivenToAlgo, Algorithm.SparseIterativeJacobi, i);
                 stopWatch.Stop();
 
-                timeElapsedList.Add(new AlgoritmCheckTimeModelWithIterations
+                timeElapsedList.Add(new AlgoritmCheckTimeWithIterations
                 {
                     ElapsedTime = stopWatch.Elapsed,
                     PointsQuantity = pointsGivenToAlgo.Count,
@@ -224,7 +218,7 @@ namespace ApproximationAltitudeProfile
 
         private static void ComputeForCheckPrecisionOffItterativeAlgoritm(List<int> iterativeList)
         {
-            var resultList = new List<AlgorithmIterativePrecisionModel>();
+            var resultList = new List<AlgorithmIterativePrecision>();
             foreach (var iterativeNumber in iterativeList)
             {
                 var points = Parser.ParsePointData(_csvFile.Replace("%points%", "250").Replace("%route%", "1"), 1);
@@ -257,7 +251,7 @@ namespace ApproximationAltitudeProfile
                     .Concat(valuesFromFile)
                     .Concat(expectedValuesForJacobi)
                     .GroupBy(x => x.x)
-                    .Select(gl => new AlgorithmIterativePrecisionModel
+                    .Select(gl => new AlgorithmIterativePrecision
                     {
                         XKey = gl.Key,
                         Iteration = iterativeNumber,
@@ -283,7 +277,7 @@ namespace ApproximationAltitudeProfile
 
         private static void ComputeForCheckPrecisionOfIterativeAlgoritmWithGauss(List<int> iterativeList)
         {
-            var resultList = new List<AlgorithmIterativePrecisionWithGaussModel>();
+            var resultList = new List<AlgorithmIterativePrecisionWithGauss>();
             foreach (var iterativeNumber in iterativeList)
             {
                 var points = Parser.ParsePointData(_csvFile.Replace("%points%", "250").Replace("%route%", "1"), 1);
@@ -320,7 +314,7 @@ namespace ApproximationAltitudeProfile
                     .Concat(expectedValuesForJacobi)
                     .Concat(expectedValuesForPartialPivot)
                     .GroupBy(x => x.x)
-                    .Select(gl => new AlgorithmIterativePrecisionWithGaussModel
+                    .Select(gl => new AlgorithmIterativePrecisionWithGauss
                     {
                         XKey = gl.Key,
                         Iteration = iterativeNumber,
@@ -349,7 +343,7 @@ namespace ApproximationAltitudeProfile
               
         static void CheckAlgoritmTimes()
         {
-            var timeElapsedList = new List<AlgoritmCheckTimeModel>();
+            var timeElapsedList = new List<AlgoritmCheckTime>();
             var pointsFromRoute = Parser.ParsePointData(_csvFile.Replace("%points%", "250").Replace("%route%", "1"), 1);
             for (int j = 0; j < 5; j++)
             {
@@ -364,7 +358,7 @@ namespace ApproximationAltitudeProfile
                 var csiGaussSeidel =
                     new CubicSplineInterpolation(pointsGivenToAlgo, Algorithm.IterativeGaussSeidel);
                 stopWatch.Stop();
-                timeElapsedList.Add(new AlgoritmCheckTimeModel
+                timeElapsedList.Add(new AlgoritmCheckTime
                 {
                     ElapsedTime = stopWatch.Elapsed,
                     PointsQuantity = pointsGivenToAlgo.Count,
@@ -376,7 +370,7 @@ namespace ApproximationAltitudeProfile
                 var csiGaussJacobi = new CubicSplineInterpolation(pointsGivenToAlgo, Algorithm.IterativeJacobi);
                 stopWatch.Stop();
 
-                timeElapsedList.Add(new AlgoritmCheckTimeModel
+                timeElapsedList.Add(new AlgoritmCheckTime
                 {
                     ElapsedTime = stopWatch.Elapsed,
                     PointsQuantity = pointsGivenToAlgo.Count,
@@ -389,7 +383,7 @@ namespace ApproximationAltitudeProfile
                     new CubicSplineInterpolation(pointsGivenToAlgo, Algorithm.GaussPartialPivot);
                 stopWatch.Stop();
 
-                timeElapsedList.Add(new AlgoritmCheckTimeModel
+                timeElapsedList.Add(new AlgoritmCheckTime
                 {
                     ElapsedTime = stopWatch.Elapsed,
                     AlgoritmType = Algorithm.GaussPartialPivot.ToString(),
@@ -401,7 +395,7 @@ namespace ApproximationAltitudeProfile
                 var csiSparseIterativeJacobi = new CubicSplineInterpolation(pointsGivenToAlgo, Algorithm.SparseIterativeJacobi);
                 stopWatch.Stop();
 
-                timeElapsedList.Add(new AlgoritmCheckTimeModel
+                timeElapsedList.Add(new AlgoritmCheckTime
                 {
                     ElapsedTime = stopWatch.Elapsed,
                     AlgoritmType = Algorithm.SparseIterativeJacobi.ToString(),
@@ -414,7 +408,7 @@ namespace ApproximationAltitudeProfile
                 stopWatch.Stop();
                 stopWatch.Stop();
 
-                timeElapsedList.Add(new AlgoritmCheckTimeModel
+                timeElapsedList.Add(new AlgoritmCheckTime
                 {
                     ElapsedTime = stopWatch.Elapsed,
                     AlgoritmType = Algorithm.SparseAlgLibraryType.ToString(),

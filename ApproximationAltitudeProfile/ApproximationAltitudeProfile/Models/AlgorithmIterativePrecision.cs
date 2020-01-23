@@ -1,7 +1,7 @@
 ﻿using System;
 namespace ApproximationAltitudeProfile.AlgorithmModels
 {
-    public class AlgorithmIterativePrecisionModel
+    public class AlgorithmIterativePrecision
     {
         public double XKey { get; set; }
         public int Iteration { get; set; }

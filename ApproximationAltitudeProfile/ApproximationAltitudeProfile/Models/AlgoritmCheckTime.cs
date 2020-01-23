@@ -1,7 +1,7 @@
 ﻿using System;
 namespace ApproximationAltitudeProfile.AlgorithmModels
 {
-    public class AlgoritmCheckTimeModel
+    public class AlgoritmCheckTime
     {
         public TimeSpan ElapsedTime { get; set; }
         public string AlgoritmType { get; set; }
