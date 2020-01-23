@@ -13,42 +13,42 @@ namespace ApproximationAltitudeProfile
         private const string _csvFile = "Result_%points%_%route%.csv";
         static void Main(string[] args)
         {
-            CheckTimeForBestAlghoritmE2();
-            CheckTimeForIterativeAlghoritmE3();
-            ComputeAltitudeProfileC1(new List<int> { 2, 5, 14 });
-            ComputeForCheckPrecisionOfItterativeAlgoritm(new List<int> { 50, 250, 500 });
-            ComputeForCheckPrecisionOfIterativeAlgoritmWithGauss(new List<int> { 50, 250, 500 });
+            TimeCheckBestAlgorithm_E2();
+            TimeCheckIterativeAlg_E3();
+            AltProfileComputation_C1(new List<int> { 2, 5, 14 });
+            PrecisionCheckIterativeAlgoritms(new List<int> { 50, 250, 500 });
+            PrecisionCheckIterativeAlgoritmsAndGauss(new List<int> { 50, 250, 500 });
             CheckAlgoritmTimes();
 
-            Console.WriteLine("End");
+            Console.WriteLine("Finished calculations, generated results data.");
             Console.ReadLine();
         }
 
-        static void CheckTimeForBestAlghoritmE2()
+        // obliczenie 4 przykladowych wartosci, by oszacowac ilosc wezlow do przetworzenia w 30min
+        static void TimeCheckBestAlgorithm_E2()
         {
             var stopWatch = new Stopwatch();
 
             var timeElapsedList = new List<AlgoritmCheckTimeWithIterations>();
-            var pointsFromRoute = Parser.ParsePointData(_csvFile.Replace("%points%", "500").Replace("%route%", "2"), 2);
+            var routeKnots = Parser.ParseKnotData(_csvFile.Replace("%points%", "500").Replace("%route%", "2"));
 
             for (int j = 0; j < 4; j++)
             {
-                var pointsGivenToAlgo = new List<DataPoint>();
+                var providedKnots = new List<DataPoint>();
                 for (int i = 0; i < 25 + 25 * j; i++)
                 {
-                    pointsGivenToAlgo.AddRange(pointsFromRoute);
+                    providedKnots.AddRange(routeKnots);
                 }
 
                 stopWatch.Start();
-                var csiSparseIterativeJacobi =
-                    new CubicSplineInterpolation(pointsGivenToAlgo, Algorithm.SparseIterativeJacobi, 3);
+                var _ = new CubicSplineInterpolation(providedKnots, Algorithm.SparseIterativeJacobi, 3);
                 stopWatch.Stop();
 
                 timeElapsedList.Add(new AlgoritmCheckTimeWithIterations
                 {
                     ElapsedTime = stopWatch.Elapsed,
-                    PointsQuantity = pointsGivenToAlgo.Count,
-                    AlgoritmType = Algorithm.SparseIterativeJacobi.ToString(),
+                    PointsQuantity = providedKnots.Count,
+                    AlgorithmType = Algorithm.SparseIterativeJacobi.ToString(),
                 });
                 stopWatch.Reset();
             }
@@ -60,10 +60,11 @@ namespace ApproximationAltitudeProfile
             }
         }
 
-        static void CheckTimeForIterativeAlghoritmE3()
+        // zaleznosc czasu wykonania od ilosci iteracji i uzyskiwanej dokladnosci
+        static void TimeCheckIterativeAlg_E3()
         {
             var timeElapsedList = new List<AlgoritmCheckTimeWithIterations>();
-            var pointsFromRoute = Parser.ParsePointData(_csvFile.Replace("%points%", "500").Replace("%route%", "2"), 2);
+            var pointsFromRoute = Parser.ParseKnotData(_csvFile.Replace("%points%", "500").Replace("%route%", "2"));
 
             var pointsGivenToAlgo = new List<DataPoint>();
             for (int i = 0; i < 21; i++)
@@ -71,46 +72,43 @@ namespace ApproximationAltitudeProfile
                 pointsGivenToAlgo.AddRange(pointsFromRoute);
             }
 
-
             for (int i = 3; i < 40; i += 3)
             {
                 var stopWatch = new Stopwatch();
                 stopWatch.Start();
-                var csiGaussSeidel =
-                    new CubicSplineInterpolation(pointsGivenToAlgo, Algorithm.IterativeGaussSeidel, i);
+                var _1 = new CubicSplineInterpolation(pointsGivenToAlgo, Algorithm.IterativeGaussSeidel, i);
                 stopWatch.Stop();
                 timeElapsedList.Add(new AlgoritmCheckTimeWithIterations
                 {
                     ElapsedTime = stopWatch.Elapsed,
                     PointsQuantity = pointsGivenToAlgo.Count,
-                    AlgoritmType = Algorithm.IterativeGaussSeidel.ToString(),
+                    AlgorithmType = Algorithm.IterativeGaussSeidel.ToString(),
                     Iteration = i
                 });
 
                 stopWatch.Reset();
                 stopWatch.Start();
-                var csiGaussJacobi = new CubicSplineInterpolation(pointsGivenToAlgo, Algorithm.IterativeJacobi, i);
+                var _2 = new CubicSplineInterpolation(pointsGivenToAlgo, Algorithm.IterativeJacobi, i);
                 stopWatch.Stop();
 
                 timeElapsedList.Add(new AlgoritmCheckTimeWithIterations
                 {
                     ElapsedTime = stopWatch.Elapsed,
                     PointsQuantity = pointsGivenToAlgo.Count,
-                    AlgoritmType = Algorithm.IterativeJacobi.ToString(),
+                    AlgorithmType = Algorithm.IterativeJacobi.ToString(),
                     Iteration = i
                 });
 
                 stopWatch.Reset();
                 stopWatch.Start();
-                var csiSparseIterativeJacobi =
-                    new CubicSplineInterpolation(pointsGivenToAlgo, Algorithm.SparseIterativeJacobi, i);
+                var _3 = new CubicSplineInterpolation(pointsGivenToAlgo, Algorithm.SparseIterativeJacobi, i);
                 stopWatch.Stop();
 
                 timeElapsedList.Add(new AlgoritmCheckTimeWithIterations
                 {
                     ElapsedTime = stopWatch.Elapsed,
                     PointsQuantity = pointsGivenToAlgo.Count,
-                    AlgoritmType = Algorithm.SparseIterativeJacobi.ToString(),
+                    AlgorithmType = Algorithm.SparseIterativeJacobi.ToString(),
                     Iteration = i
                 });
             }
@@ -123,14 +121,15 @@ namespace ApproximationAltitudeProfile
 
         }
 
-        static void ComputeAltitudeProfileC1(List<int> routeNumbers)
+        // obliczenie profili wysokosciowych i bledow interpolacji dla tras 2, 5, 14 i liczby wezlow: 50, 250, 500
+        static void AltProfileComputation_C1(List<int> routeNumbers)
         {
             var pointsToAlgo = new List<int> { 50, 250, 500 };
             foreach (var routeNumber in routeNumbers)
             {
                 foreach (var pointsQuantity in pointsToAlgo)
                 {
-                    var pointsFromRoute = Parser.ParsePointData(_csvFile.Replace("%points%", pointsQuantity.ToString()).Replace("%route%", routeNumber.ToString()), routeNumber);
+                    var pointsFromRoute = Parser.ParseKnotData(_csvFile.Replace("%points%", pointsQuantity.ToString()).Replace("%route%", routeNumber.ToString()));
 
                     var pointsGivenToAlgo = new List<DataPoint>();
                     for (int i = 0; i < pointsFromRoute.Count; i++)
@@ -216,31 +215,32 @@ namespace ApproximationAltitudeProfile
             }
         }
 
-        private static void ComputeForCheckPrecisionOfItterativeAlgoritm(List<int> iterativeList)
+        // obliczenie profili i porownanie oczekiwanych wartosci z otrzymanymi dla algorytmow iterowanych
+        private static void PrecisionCheckIterativeAlgoritms(List<int> iterativeList)
         {
             var resultList = new List<AlgorithmIterativePrecision>();
             foreach (var iterativeNumber in iterativeList)
             {
-                var points = Parser.ParsePointData(_csvFile.Replace("%points%", "250").Replace("%route%", "2"), 2);
+                var knots = Parser.ParseKnotData(_csvFile.Replace("%points%", "250").Replace("%route%", "2"));
 
-                var pointsToAlg = new List<DataPoint>();
-                for (int i = 0; i < points.Count; i++)
+                var knotsProvided = new List<DataPoint>();
+                for (int i = 0; i < knots.Count; i++)
                 {
                     if (i % 2 == 0)
                     {
-                        pointsToAlg.Add(points[i]);
+                        knotsProvided.Add(knots[i]);
                     }
                 }
-                var csiGaussSeidel = new CubicSplineInterpolation(pointsToAlg, Algorithm.IterativeGaussSeidel, iterativeNumber);
-                var csiGaussJacobi = new CubicSplineInterpolation(pointsToAlg, Algorithm.IterativeJacobi, iterativeNumber);
+                var csiGaussSeidel = new CubicSplineInterpolation(knotsProvided, Algorithm.IterativeGaussSeidel, iterativeNumber);
+                var csiGaussJacobi = new CubicSplineInterpolation(knotsProvided, Algorithm.IterativeJacobi, iterativeNumber);
 
                 var indexes = new List<double>();
-                for (double i = 0; i < points.Count - 2; i++)
+                for (double i = 0; i < knots.Count - 2; i++)
                 {
                     indexes.Add(i);
                 }
 
-                var valuesFromFile = indexes.Select(x => new { x, value = points.First(p => p.X == x).Y, AlgorithmType = Algorithm.None }).ToList();
+                var valuesFromFile = indexes.Select(x => new { x, value = knots.First(p => p.X == x).Y, AlgorithmType = Algorithm.None }).ToList();
 
                 var expectedValuesForSeidel = indexes.Select(x => new { x, value = csiGaussSeidel.GetObjectiveFunction(x), AlgorithmType = Algorithm.IterativeGaussSeidel }).ToList();
 
@@ -275,12 +275,13 @@ namespace ApproximationAltitudeProfile
             }
         }
 
-        private static void ComputeForCheckPrecisionOfIterativeAlgoritmWithGauss(List<int> iterativeList)
+        // obliczenie profili i porownanie oczekiwanych wartosci z otrzymanymi dla algorytmow iterowanych i porownanie z PartialGauss
+        private static void PrecisionCheckIterativeAlgoritmsAndGauss(List<int> iterativeList)
         {
             var resultList = new List<AlgorithmIterativePrecisionWithGauss>();
             foreach (var iterativeNumber in iterativeList)
             {
-                var points = Parser.ParsePointData(_csvFile.Replace("%points%", "250").Replace("%route%", "2"), 2);
+                var points = Parser.ParseKnotData(_csvFile.Replace("%points%", "250").Replace("%route%", "2"));
 
                 var pointsToAlg = new List<DataPoint>();
                 for (int i = 0; i < points.Count; i++)
@@ -334,17 +335,18 @@ namespace ApproximationAltitudeProfile
                 result.IsSameAsGauss = (result.ValueForGauss == result.ValueForGaussSeidel);
             }
 
-            using (var writer = new StreamWriter($"result_check_preciscion_iterative_algo_with_gauss.csv"))
+            using (var writer = new StreamWriter($"result_precision_gauss_iterative.csv"))
             using (var csv = new CsvWriter(writer))
             {
                 csv.WriteRecords(resultList);
             }
         }
-              
-        static void CheckAlgoritmTimes()
+
+        // sprawdza czasy wykonywania poszczegolonych algorytmow dla trasy nr 2 przy 250 węzłach
+        static void CheckAlgoritmTimes() 
         {
             var timeElapsedList = new List<AlgoritmCheckTime>();
-            var pointsFromRoute = Parser.ParsePointData(_csvFile.Replace("%points%", "250").Replace("%route%", "2"), 2);
+            var pointsFromRoute = Parser.ParseKnotData(_csvFile.Replace("%points%", "250").Replace("%route%", "2"));
             for (int j = 0; j < 5; j++)
             {
                 var pointsGivenToAlgo = new List<DataPoint>();
@@ -362,7 +364,7 @@ namespace ApproximationAltitudeProfile
                 {
                     ElapsedTime = stopWatch.Elapsed,
                     PointsQuantity = pointsGivenToAlgo.Count,
-                    AlgoritmType = Algorithm.IterativeGaussSeidel.ToString(),
+                    AlgorithmType = Algorithm.IterativeGaussSeidel.ToString(),
                 });
 
                 stopWatch.Reset();
@@ -374,7 +376,7 @@ namespace ApproximationAltitudeProfile
                 {
                     ElapsedTime = stopWatch.Elapsed,
                     PointsQuantity = pointsGivenToAlgo.Count,
-                    AlgoritmType = Algorithm.IterativeJacobi.ToString(),
+                    AlgorithmType = Algorithm.IterativeJacobi.ToString(),
                 });
 
                 stopWatch.Reset();
@@ -386,7 +388,7 @@ namespace ApproximationAltitudeProfile
                 timeElapsedList.Add(new AlgoritmCheckTime
                 {
                     ElapsedTime = stopWatch.Elapsed,
-                    AlgoritmType = Algorithm.GaussPartialPivot.ToString(),
+                    AlgorithmType = Algorithm.GaussPartialPivot.ToString(),
                     PointsQuantity = pointsGivenToAlgo.Count
                 });
 
@@ -398,7 +400,7 @@ namespace ApproximationAltitudeProfile
                 timeElapsedList.Add(new AlgoritmCheckTime
                 {
                     ElapsedTime = stopWatch.Elapsed,
-                    AlgoritmType = Algorithm.SparseIterativeJacobi.ToString(),
+                    AlgorithmType = Algorithm.SparseIterativeJacobi.ToString(),
                     PointsQuantity = pointsGivenToAlgo.Count
                 });
 
@@ -411,7 +413,7 @@ namespace ApproximationAltitudeProfile
                 timeElapsedList.Add(new AlgoritmCheckTime
                 {
                     ElapsedTime = stopWatch.Elapsed,
-                    AlgoritmType = Algorithm.SparseAlgLibraryType.ToString(),
+                    AlgorithmType = Algorithm.SparseAlgLibraryType.ToString(),
                     PointsQuantity = pointsGivenToAlgo.Count
                 });
             }

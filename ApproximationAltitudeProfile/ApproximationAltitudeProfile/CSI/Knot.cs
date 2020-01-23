@@ -1,12 +1,12 @@
 ﻿namespace ApproximationAltitudeProfile
 {
-    public class Point
+    public class Knot
     {
         public int Index { get; }
         public double X { get; }
         public double Y { get; }
 
-        public Point(
+        public Knot(
             int index,
             double x, 
             double y)

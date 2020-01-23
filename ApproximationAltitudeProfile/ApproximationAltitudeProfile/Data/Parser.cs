@@ -6,7 +6,7 @@ namespace ApproximationAltitudeProfile
 {
     public static class Parser
     {
-        public static List<DataPoint> ParsePointData(string fileName, int routeNumber)
+        public static List<DataPoint> ParseKnotData(string fileName)
         {
             var resultPointList = new List<DataPoint>();
             System.Text.Encoding.RegisterProvider(System.Text.CodePagesEncodingProvider.Instance);

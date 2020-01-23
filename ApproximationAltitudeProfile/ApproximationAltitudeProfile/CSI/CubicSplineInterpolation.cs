@@ -10,7 +10,7 @@ namespace ApproximationAltitudeProfile
         private Algorithm _algorithmType;
         private readonly int _iteratives;
 
-        private readonly List<Point> _analysedPoints;
+        private readonly List<Knot> _analysedPoints;
         private readonly List<double> _secondDerivativesArray;
         private List<double> _distancesBetweenXs;
 
@@ -19,10 +19,10 @@ namespace ApproximationAltitudeProfile
             Algorithm algorithType,
             int iteratives = 3)
         {
-            _analysedPoints = new List<Point>();
+            _analysedPoints = new List<Knot>();
             for (int i = 0; i < dataPoints.Count; i++)
             {
-                _analysedPoints.Add(new Point(i, dataPoints[i].X, dataPoints[i].Y));
+                _analysedPoints.Add(new Knot(i, dataPoints[i].X, dataPoints[i].Y));
             }
             _secondDerivativesArray = new List<double>();
             _algorithmType = algorithType;

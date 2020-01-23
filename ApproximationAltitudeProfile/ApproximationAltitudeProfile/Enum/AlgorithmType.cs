@@ -6,7 +6,7 @@
         IterativeJacobi,
         IterativeGaussSeidel,
         SparseIterativeJacobi,
-        SparseAlgLibraryType,
+        SparseAlgLibraryType, // biblioteka numeryczna alglib
         None
     }
 }
