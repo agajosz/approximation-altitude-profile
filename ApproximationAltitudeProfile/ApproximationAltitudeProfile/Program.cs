@@ -18,7 +18,7 @@ namespace ApproximationAltitudeProfile
         {
             CheckTimeForBestAlghoritmE2();
             CheckTimeForIterativeAlghoritmE3();
-            ComputeAltitudeProfileC1(new List<int> { 1, 13, 18 });
+            ComputeAltitudeProfileC1(new List<int> { 2, 5, 113 });
             ComputeForCheckPrecisionOffItterativeAlgoritm(new List<int> { 1, 2, 5, 10, 15, 25, 50, 75, 100, 500, 1000, 2000 });
             ComputeForCheckPrecisionOfIterativeAlgoritmWithGauss(new List<int> { 1, 2, 5, 10, 15, 25, 2000 });
             CheckAlgoritmTimes();
