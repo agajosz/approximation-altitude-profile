@@ -67,48 +67,48 @@ namespace ApproximationAltitudeProfile
             var timeElapsedList = new List<AlgoritmCheckTimeWithIterations>();
             var pointsFromRoute = Parser.ParseKnotData(_csvFile.Replace("%points%", "500").Replace("%route%", "2"));
 
-            var pointsGivenToAlgo = new List<DataPoint>();
+            var providedKnots = new List<DataPoint>();
             for (int i = 0; i < 21; i++)
             {
-                pointsGivenToAlgo.AddRange(pointsFromRoute);
+                providedKnots.AddRange(pointsFromRoute);
             }
 
             for (int i = 3; i < 40; i += 3)
             {
                 var stopWatch = new Stopwatch();
                 stopWatch.Start();
-                var _1 = new CubicSplineInterpolation(pointsGivenToAlgo, Algorithm.IterativeGaussSeidel, i);
+                var _1 = new CubicSplineInterpolation(providedKnots, Algorithm.IterativeGaussSeidel, i);
                 stopWatch.Stop();
                 timeElapsedList.Add(new AlgoritmCheckTimeWithIterations
                 {
                     ElapsedTime = stopWatch.Elapsed,
-                    PointsQuantity = pointsGivenToAlgo.Count,
+                    PointsQuantity = providedKnots.Count,
                     AlgorithmType = Algorithm.IterativeGaussSeidel.ToString(),
                     Iteration = i
                 });
 
                 stopWatch.Reset();
                 stopWatch.Start();
-                var _2 = new CubicSplineInterpolation(pointsGivenToAlgo, Algorithm.IterativeJacobi, i);
+                var _2 = new CubicSplineInterpolation(providedKnots, Algorithm.IterativeJacobi, i);
                 stopWatch.Stop();
 
                 timeElapsedList.Add(new AlgoritmCheckTimeWithIterations
                 {
                     ElapsedTime = stopWatch.Elapsed,
-                    PointsQuantity = pointsGivenToAlgo.Count,
+                    PointsQuantity = providedKnots.Count,
                     AlgorithmType = Algorithm.IterativeJacobi.ToString(),
                     Iteration = i
                 });
 
                 stopWatch.Reset();
                 stopWatch.Start();
-                var _3 = new CubicSplineInterpolation(pointsGivenToAlgo, Algorithm.SparseIterativeJacobi, i);
+                var _3 = new CubicSplineInterpolation(providedKnots, Algorithm.SparseIterativeJacobi, i);
                 stopWatch.Stop();
 
                 timeElapsedList.Add(new AlgoritmCheckTimeWithIterations
                 {
                     ElapsedTime = stopWatch.Elapsed,
-                    PointsQuantity = pointsGivenToAlgo.Count,
+                    PointsQuantity = providedKnots.Count,
                     AlgorithmType = Algorithm.SparseIterativeJacobi.ToString(),
                     Iteration = i
                 });
@@ -132,20 +132,20 @@ namespace ApproximationAltitudeProfile
                 {
                     var pointsFromRoute = Parser.ParseKnotData(_csvFile.Replace("%points%", pointsQuantity.ToString()).Replace("%route%", routeNumber.ToString()));
 
-                    var pointsGivenToAlgo = new List<DataPoint>();
+                    var providedKnots = new List<DataPoint>();
                     for (int i = 0; i < pointsFromRoute.Count; i++)
                     {
                         if (i % 2 == 0)
                         {
-                            pointsGivenToAlgo.Add(pointsFromRoute[i]);
+                            providedKnots.Add(pointsFromRoute[i]);
                         }
                     }
 
-                    var csiGaussSeidel = new CubicSplineInterpolation(pointsGivenToAlgo, Algorithm.IterativeGaussSeidel);
-                    var csiGaussJacobi = new CubicSplineInterpolation(pointsGivenToAlgo, Algorithm.IterativeJacobi);
-                    var csiGaussPartialPivot = new CubicSplineInterpolation(pointsGivenToAlgo, Algorithm.GaussPartialPivot);
-                    var csiSparseIterativeJacobi = new CubicSplineInterpolation(pointsGivenToAlgo, Algorithm.SparseIterativeJacobi);
-                    var alglib = new CubicSplineInterpolation(pointsGivenToAlgo, Algorithm.SparseAlgLibraryType);
+                    var csiGaussSeidel = new CubicSplineInterpolation(providedKnots, Algorithm.IterativeGaussSeidel);
+                    var csiGaussJacobi = new CubicSplineInterpolation(providedKnots, Algorithm.IterativeJacobi);
+                    var csiGaussPartialPivot = new CubicSplineInterpolation(providedKnots, Algorithm.GaussPartialPivot);
+                    var csiSparseIterativeJacobi = new CubicSplineInterpolation(providedKnots, Algorithm.SparseIterativeJacobi);
+                    var alglib = new CubicSplineInterpolation(providedKnots, Algorithm.SparseAlgLibraryType);
 
                     var indexes = new List<double>();
                     for (double i = 0; i < pointsFromRoute.Count - 2; i++)
@@ -224,16 +224,16 @@ namespace ApproximationAltitudeProfile
             {
                 var knots = Parser.ParseKnotData(_csvFile.Replace("%points%", "250").Replace("%route%", "2"));
 
-                var knotsProvided = new List<DataPoint>();
+                var providedKnots = new List<DataPoint>();
                 for (int i = 0; i < knots.Count; i++)
                 {
                     if (i % 2 == 0)
                     {
-                        knotsProvided.Add(knots[i]);
+                        providedKnots.Add(knots[i]);
                     }
                 }
-                var csiGaussSeidel = new CubicSplineInterpolation(knotsProvided, Algorithm.IterativeGaussSeidel, iterativeNumber);
-                var csiGaussJacobi = new CubicSplineInterpolation(knotsProvided, Algorithm.IterativeJacobi, iterativeNumber);
+                var csiGaussSeidel = new CubicSplineInterpolation(providedKnots, Algorithm.IterativeGaussSeidel, iterativeNumber);
+                var csiGaussJacobi = new CubicSplineInterpolation(providedKnots, Algorithm.IterativeJacobi, iterativeNumber);
 
                 var indexes = new List<double>();
                 for (double i = 0; i < knots.Count - 2; i++)
@@ -284,17 +284,17 @@ namespace ApproximationAltitudeProfile
             {
                 var points = Parser.ParseKnotData(_csvFile.Replace("%points%", "250").Replace("%route%", "2"));
 
-                var pointsToAlg = new List<DataPoint>();
+                var providedKnots = new List<DataPoint>();
                 for (int i = 0; i < points.Count; i++)
                 {
                     if (i % 2 == 0)
                     {
-                        pointsToAlg.Add(points[i]);
+                        providedKnots.Add(points[i]);
                     }
                 }
-                var csiGaussSeidel = new CubicSplineInterpolation(pointsToAlg, Algorithm.IterativeGaussSeidel, iterativeNumber);
-                var csiGaussJacobi = new CubicSplineInterpolation(pointsToAlg, Algorithm.IterativeJacobi, iterativeNumber);
-                var csiGaussPartialPivot = new CubicSplineInterpolation(pointsToAlg, Algorithm.GaussPartialPivot, iterativeNumber);
+                var csiGaussSeidel = new CubicSplineInterpolation(providedKnots, Algorithm.IterativeGaussSeidel, iterativeNumber);
+                var csiGaussJacobi = new CubicSplineInterpolation(providedKnots, Algorithm.IterativeJacobi, iterativeNumber);
+                var csiGaussPartialPivot = new CubicSplineInterpolation(providedKnots, Algorithm.GaussPartialPivot, iterativeNumber);
 
                 var indexes = new List<double>();
                 for (double i = 0; i < points.Count - 2; i++)
@@ -350,64 +350,64 @@ namespace ApproximationAltitudeProfile
             var pointsFromRoute = Parser.ParseKnotData(_csvFile.Replace("%points%", "250").Replace("%route%", "2"));
             for (int j = 0; j < 5; j++)
             {
-                var pointsGivenToAlgo = new List<DataPoint>();
+                var providedKnots = new List<DataPoint>();
                 for (int i = 0; i < 1 + 2 * j; i++)
                 {
-                    pointsGivenToAlgo.AddRange(pointsFromRoute);
+                    providedKnots.AddRange(pointsFromRoute);
                 }
 
                 var stopWatch = new Stopwatch();
                 stopWatch.Start();
                 var csiGaussSeidel =
-                    new CubicSplineInterpolation(pointsGivenToAlgo, Algorithm.IterativeGaussSeidel);
+                    new CubicSplineInterpolation(providedKnots, Algorithm.IterativeGaussSeidel);
                 stopWatch.Stop();
                 timeElapsedList.Add(new AlgoritmCheckTime
                 {
                     ElapsedTime = stopWatch.Elapsed,
-                    PointsQuantity = pointsGivenToAlgo.Count,
+                    PointsQuantity = providedKnots.Count,
                     AlgorithmType = Algorithm.IterativeGaussSeidel.ToString(),
                 });
 
                 stopWatch.Reset();
                 stopWatch.Start();
-                var csiGaussJacobi = new CubicSplineInterpolation(pointsGivenToAlgo, Algorithm.IterativeJacobi);
+                var csiGaussJacobi = new CubicSplineInterpolation(providedKnots, Algorithm.IterativeJacobi);
                 stopWatch.Stop();
 
                 timeElapsedList.Add(new AlgoritmCheckTime
                 {
                     ElapsedTime = stopWatch.Elapsed,
-                    PointsQuantity = pointsGivenToAlgo.Count,
+                    PointsQuantity = providedKnots.Count,
                     AlgorithmType = Algorithm.IterativeJacobi.ToString(),
                 });
 
                 stopWatch.Reset();
                 stopWatch.Start();
                 var csiGaussPartialPivot =
-                    new CubicSplineInterpolation(pointsGivenToAlgo, Algorithm.GaussPartialPivot);
+                    new CubicSplineInterpolation(providedKnots, Algorithm.GaussPartialPivot);
                 stopWatch.Stop();
 
                 timeElapsedList.Add(new AlgoritmCheckTime
                 {
                     ElapsedTime = stopWatch.Elapsed,
                     AlgorithmType = Algorithm.GaussPartialPivot.ToString(),
-                    PointsQuantity = pointsGivenToAlgo.Count
+                    PointsQuantity = providedKnots.Count
                 });
 
                 stopWatch.Reset();
                 stopWatch.Start();
-                var csiSparseIterativeJacobi = new CubicSplineInterpolation(pointsGivenToAlgo, Algorithm.SparseIterativeJacobi);
+                var csiSparseIterativeJacobi = new CubicSplineInterpolation(providedKnots, Algorithm.SparseIterativeJacobi);
                 stopWatch.Stop();
 
                 timeElapsedList.Add(new AlgoritmCheckTime
                 {
                     ElapsedTime = stopWatch.Elapsed,
                     AlgorithmType = Algorithm.SparseIterativeJacobi.ToString(),
-                    PointsQuantity = pointsGivenToAlgo.Count
+                    PointsQuantity = providedKnots.Count
                 });
 
                 stopWatch.Reset();
                 stopWatch.Start();
-                var alglib = new CubicSplineInterpolation(pointsGivenToAlgo, Algorithm.SparseAlgLibraryType);
+                var alglib = new CubicSplineInterpolation(providedKnots, Algorithm.SparseAlgLibraryType);
                 stopWatch.Stop();
                 stopWatch.Stop();
 
@@ -415,7 +415,7 @@ namespace ApproximationAltitudeProfile
                 {
                     ElapsedTime = stopWatch.Elapsed,
                     AlgorithmType = Algorithm.SparseAlgLibraryType.ToString(),
-                    PointsQuantity = pointsGivenToAlgo.Count
+                    PointsQuantity = providedKnots.Count
                 });
             }
 
@@ -431,62 +431,62 @@ namespace ApproximationAltitudeProfile
         {
             var timeElapsedList = new List<AlgoritmCheckTime>();
             var pointsFromRoute = Parser.ParseKnotData(_csvFile.Replace("%points%", "10000").Replace("%route%", "2"));
-            var pointsGivenToAlgo = new List<DataPoint>();
+            var providedKnots = new List<DataPoint>();
             for (int i = 100; i <= 10000; i++)
             {
                 if (i % 500 == 0) {
-                    pointsGivenToAlgo.AddRange(pointsFromRoute);
+                    providedKnots.AddRange(pointsFromRoute);
                     
                     var stopWatch = new Stopwatch();
                     stopWatch.Start();
-                    var _1 = new CubicSplineInterpolation(pointsGivenToAlgo, Algorithm.IterativeGaussSeidel);
+                    var _1 = new CubicSplineInterpolation(providedKnots, Algorithm.IterativeGaussSeidel);
                     stopWatch.Stop();
                     timeElapsedList.Add(new AlgoritmCheckTime
                     {
                         ElapsedTime = stopWatch.Elapsed,
-                        PointsQuantity = pointsGivenToAlgo.Count,
+                        PointsQuantity = providedKnots.Count,
                         AlgorithmType = Algorithm.IterativeGaussSeidel.ToString(),
                     });
 
                     stopWatch.Reset();
                     stopWatch.Start();
-                    var _2 = new CubicSplineInterpolation(pointsGivenToAlgo, Algorithm.IterativeJacobi);
+                    var _2 = new CubicSplineInterpolation(providedKnots, Algorithm.IterativeJacobi);
                     stopWatch.Stop();
 
                     timeElapsedList.Add(new AlgoritmCheckTime
                     {
                         ElapsedTime = stopWatch.Elapsed,
-                        PointsQuantity = pointsGivenToAlgo.Count,
+                        PointsQuantity = providedKnots.Count,
                         AlgorithmType = Algorithm.IterativeJacobi.ToString(),
                     });
 
                     stopWatch.Reset();
                     stopWatch.Start();
-                    var _3 = new CubicSplineInterpolation(pointsGivenToAlgo, Algorithm.GaussPartialPivot);
+                    var _3 = new CubicSplineInterpolation(providedKnots, Algorithm.GaussPartialPivot);
                     stopWatch.Stop();
 
                     timeElapsedList.Add(new AlgoritmCheckTime
                     {
                         ElapsedTime = stopWatch.Elapsed,
                         AlgorithmType = Algorithm.GaussPartialPivot.ToString(),
-                        PointsQuantity = pointsGivenToAlgo.Count
+                        PointsQuantity = providedKnots.Count
                     });
 
                     stopWatch.Reset();
                     stopWatch.Start();
-                    var _4 = new CubicSplineInterpolation(pointsGivenToAlgo, Algorithm.SparseIterativeJacobi);
+                    var _4 = new CubicSplineInterpolation(providedKnots, Algorithm.SparseIterativeJacobi);
                     stopWatch.Stop();
 
                     timeElapsedList.Add(new AlgoritmCheckTime
                     {
                         ElapsedTime = stopWatch.Elapsed,
                         AlgorithmType = Algorithm.SparseIterativeJacobi.ToString(),
-                        PointsQuantity = pointsGivenToAlgo.Count
+                        PointsQuantity = providedKnots.Count
                     });
 
                     stopWatch.Reset();
                     stopWatch.Start();
-                    var _5 = new CubicSplineInterpolation(pointsGivenToAlgo, Algorithm.SparseAlgLibraryType);
+                    var _5 = new CubicSplineInterpolation(providedKnots, Algorithm.SparseAlgLibraryType);
                     stopWatch.Stop();
                     stopWatch.Stop();
 
@@ -494,7 +494,7 @@ namespace ApproximationAltitudeProfile
                     {
                         ElapsedTime = stopWatch.Elapsed,
                         AlgorithmType = Algorithm.SparseAlgLibraryType.ToString(),
-                        PointsQuantity = pointsGivenToAlgo.Count
+                        PointsQuantity = providedKnots.Count
                     });
                 }
              
