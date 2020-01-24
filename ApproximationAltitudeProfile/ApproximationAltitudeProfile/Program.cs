@@ -13,12 +13,13 @@ namespace ApproximationAltitudeProfile
         private const string _csvFile = "Result_%points%_%route%.csv";
         static void Main(string[] args)
         {
-            TimeCheckBestAlgorithm_E2();
-            TimeCheckIterativeAlg_E3();
-            AltProfileComputation_C1(new List<int> { 2, 5, 14 });
-            PrecisionCheckIterativeAlgoritms(new List<int> { 1, 2, 5, 10, 15, 25, 50, 75, 100, 500, 1000, 2000 });
-            PrecisionCheckIterativeAlgoritmsAndGauss(new List<int> { 1, 2, 5, 10, 15, 25, 2000 });
-            CheckAlgoritmTimes();
+//             TimeCheckBestAlgorithm_E2();
+//             TimeCheckIterativeAlg_E3();
+//             AltProfileComputation_C1(new List<int> { 2, 5, 14 });
+//             PrecisionCheckIterativeAlgoritms(new List<int> { 1, 2, 5, 10, 15, 25, 50, 75, 100, 500, 1000, 2000 });
+//             PrecisionCheckIterativeAlgoritmsAndGauss(new List<int> { 1, 2, 5, 10, 15, 25, 2000 });
+//             CheckAlgoritmTimes();
+            CheckAlgorithmTimesNoGaussMorePoints();
 
             Console.WriteLine("Finished calculations, generated results data.");
             Console.ReadLine();
@@ -419,6 +420,87 @@ namespace ApproximationAltitudeProfile
             }
 
             using (var writer = new StreamWriter($"times_algr_with_gauss.csv"))
+            using (var csv = new CsvWriter(writer))
+            {
+                csv.WriteRecords(timeElapsedList);
+            }
+        }
+        
+        // sprawdza czasy wykonywania poszczegolonych algorytmow dla trasy nr 2 przy 100 < knots <= 1100
+        static void CheckAlgorithmTimesNoGaussMorePoints() 
+        {
+            var timeElapsedList = new List<AlgoritmCheckTime>();
+            var pointsFromRoute = Parser.ParseKnotData(_csvFile.Replace("%points%", "10000").Replace("%route%", "2"));
+            var pointsGivenToAlgo = new List<DataPoint>();
+            for (int i = 100; i <= 10000; i++)
+            {
+                if (i % 500 == 0) {
+                    pointsGivenToAlgo.AddRange(pointsFromRoute);
+                    
+                    var stopWatch = new Stopwatch();
+                    stopWatch.Start();
+                    var _1 = new CubicSplineInterpolation(pointsGivenToAlgo, Algorithm.IterativeGaussSeidel);
+                    stopWatch.Stop();
+                    timeElapsedList.Add(new AlgoritmCheckTime
+                    {
+                        ElapsedTime = stopWatch.Elapsed,
+                        PointsQuantity = pointsGivenToAlgo.Count,
+                        AlgorithmType = Algorithm.IterativeGaussSeidel.ToString(),
+                    });
+
+                    stopWatch.Reset();
+                    stopWatch.Start();
+                    var _2 = new CubicSplineInterpolation(pointsGivenToAlgo, Algorithm.IterativeJacobi);
+                    stopWatch.Stop();
+
+                    timeElapsedList.Add(new AlgoritmCheckTime
+                    {
+                        ElapsedTime = stopWatch.Elapsed,
+                        PointsQuantity = pointsGivenToAlgo.Count,
+                        AlgorithmType = Algorithm.IterativeJacobi.ToString(),
+                    });
+
+                    stopWatch.Reset();
+                    stopWatch.Start();
+                    var _3 = new CubicSplineInterpolation(pointsGivenToAlgo, Algorithm.GaussPartialPivot);
+                    stopWatch.Stop();
+
+                    timeElapsedList.Add(new AlgoritmCheckTime
+                    {
+                        ElapsedTime = stopWatch.Elapsed,
+                        AlgorithmType = Algorithm.GaussPartialPivot.ToString(),
+                        PointsQuantity = pointsGivenToAlgo.Count
+                    });
+
+                    stopWatch.Reset();
+                    stopWatch.Start();
+                    var _4 = new CubicSplineInterpolation(pointsGivenToAlgo, Algorithm.SparseIterativeJacobi);
+                    stopWatch.Stop();
+
+                    timeElapsedList.Add(new AlgoritmCheckTime
+                    {
+                        ElapsedTime = stopWatch.Elapsed,
+                        AlgorithmType = Algorithm.SparseIterativeJacobi.ToString(),
+                        PointsQuantity = pointsGivenToAlgo.Count
+                    });
+
+                    stopWatch.Reset();
+                    stopWatch.Start();
+                    var _5 = new CubicSplineInterpolation(pointsGivenToAlgo, Algorithm.SparseAlgLibraryType);
+                    stopWatch.Stop();
+                    stopWatch.Stop();
+
+                    timeElapsedList.Add(new AlgoritmCheckTime
+                    {
+                        ElapsedTime = stopWatch.Elapsed,
+                        AlgorithmType = Algorithm.SparseAlgLibraryType.ToString(),
+                        PointsQuantity = pointsGivenToAlgo.Count
+                    });
+                }
+             
+            }
+
+            using (var writer = new StreamWriter($"times_algr_no_gauss_more_data.csv"))
             using (var csv = new CsvWriter(writer))
             {
                 csv.WriteRecords(timeElapsedList);
